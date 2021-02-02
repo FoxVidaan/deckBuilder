@@ -2,34 +2,104 @@
   <div id="deck-builder">
     <!-- #region Filters -->
     <header id="filters-header">
+      <!-- #region Leaders Filters -->
       <input
         type="button"
         value="Leader"
-        :class="filters.cardType === 'Leader' ? 'active' : ''"
-        @click="resetFilters(), (filters.cardType = 'Leader')"
+        :class="filters.card_type === 'Leader' ? 'active' : ''"
+        @click="resetFilters(), (filters.card_type = 'Leader')"
       />
+      <!-- #endregion -->
+
+      <!-- #region Cards Filters -->
       <input
         type="button"
         value="Cards"
-        :class="filters.cardType === 'Cards' ? 'active' : ''"
-        @click="resetFilters(), (filters.cardType = 'Cards')"
+        :class="filters.card_type === 'Cards' ? 'active' : ''"
+        @click="resetFilters(), (filters.card_type = 'Cards')"
       />
+      <!-- #endregion -->
+
       <input type="text" v-model="filters.name" placeholder="Goku" />
+<br>
+
+      <!-- #region Sets Filters -->
       <select v-model="filters.sets">
         <option>Any Sets</option>
-        <option v-for="(set, index) in cardsList.sets" :key="index">
+        <option v-for="set of cardsList.sets" :key="set">
           {{ set }}
         </option>
       </select>
-      <select v-model="filters.power" v-if="filters.cardType == 'Cards'">
+      <!-- #endregion -->
+
+      <!-- #region Color Filters -->
+      <select v-model="filters.color">
+        <option>Any Color</option>
+        <option v-for="color of cardsList.colors" :key="color">
+          {{ color }}
+        </option>
+      </select>
+      <!-- #endregion -->
+<br>
+
+      <!-- #region Trait Filters -->
+      <select v-model="filters.trait">
+        <option>Any Special Trait</option>
+        <option v-for="trait of cardsList.special_trait" :key="trait">
+          {{ trait }}
+        </option>
+      </select>
+      <!-- #endregion -->
+
+      <!-- #region Era Filters -->
+      <select v-model="filters.era">
+        <option>Any Era</option>
+        <option v-for="era of cardsList.era" :key="era">
+          {{ era }}
+        </option>
+      </select>
+      <!-- #endregion -->
+<br>
+      <!-- #region Power Filters -->
+      <select v-model="filters.power" v-if="filters.card_type == 'Cards'">
         <option>Any Power</option>
-        <option v-for="(set, index) in cardsList.power" :key="index">
-          {{ set }}
+        <option v-for="power of cardsList.power" :key="power">
+          {{ power }}
         </option>
       </select>
-      <input type="button" value="Clear All" @click="resetFilters()">
+      <!-- #endregion -->
+
+      <!-- #region Power Filters -->
+      <select v-model="filters.rarity" v-if="filters.card_type == 'Cards'">
+        <option>Any Rarity</option>
+        <option v-for="rarity of cardsList.rarities" :key="rarity">
+          {{ rarity }}
+        </option>
+      </select>
+      <!-- #endregion -->
+
+      <!-- #region Energy Cost Filters -->
+      <select v-model="filters.energy" v-if="filters.card_type == 'Cards'">
+        <option>Any Energy</option>
+        <option v-for="energy of cardsList.energy" :key="energy">
+          {{ energy }}
+        </option>
+      </select>
+      <!-- #endregion -->
+
+      <!-- #region Combo Power Filters -->
+      <select v-model="filters.combo_power" v-if="filters.card_type == 'Cards'">
+        <option>Any Combo Power</option>
+        <option
+          v-for="combo_power of cardsList.combo_power"
+          :key="combo_power"
+        >
+          {{ combo_power }}
+        </option>
+      </select>
+      <!-- #endregion -->
+      <input type="button" value="Clear All" @click="resetFilters()" />
     </header>
-    <!-- #endregion -->
 
     <!-- #region Cards List -->
     <div id="card-list">
@@ -37,16 +107,16 @@
         <select v-model="filters.sortBy">
           <option value="Name">Card Name: A to Z</option>
           <option value="NameDesc">Card Name: Z to A</option>
-          <option v-if="filters.cardType == 'Cards'" value="Energy">
+          <option v-if="filters.card_type == 'Cards'" value="Energy">
             Energy Cost: low to high
           </option>
-          <option v-if="filters.cardType == 'Cards'" value="EnergyDesc">
+          <option v-if="filters.card_type == 'Cards'" value="EnergyDesc">
             Energy Cost: high to low
           </option>
-          <option v-if="filters.cardType == 'Cards'" value="Power">
+          <option v-if="filters.card_type == 'Cards'" value="Power">
             Power: low to high
           </option>
-          <option v-if="filters.cardType == 'Cards'" value="PowerDesc">
+          <option v-if="filters.card_type == 'Cards'" value="PowerDesc">
             Power: high to low
           </option>
         </select>
@@ -103,10 +173,15 @@ export default {
       },
       filters: {
         name: "",
-        cardType: "Leader",
+        trait: "Any Special Trait",
+        card_type: "Leader",
+        color: "Any Color",
         sets: "Any Sets",
+        energy: "Any Energy",
         power: "Any Power",
+        combo_power: "Any Combo Power",
         rarity: "Any Rarity",
+        era: "Any Era",
         sortBy: "Name",
       },
     };
@@ -134,34 +209,57 @@ export default {
     },
     filterBy() {
       let filtered = [];
-
-      if (this.cardsList.leaders && this.cardsList.cards) {
+      if (this.cardsList.cards) {
         let filters = this.filters;
-
-        if (filters.cardType == "Leader") {
-          //#region Leaders Filters
-          for (const card of this.cardsList.leaders) {
-            if (
-              (filters.sets == "Any Sets" || filters.sets == card.sets) &&
-              card.name.toLowerCase().includes(filters.name.toLowerCase())
-            ) {
-              filtered.push(card);
+        console.log(parseInt(filters.energy));
+        //#region Cards Filters
+        for (const card of this.cardsList.cards) {
+          if (filters.sets == "Any Sets" || filters.sets == card.sets) {
+            if (filters.era == "Any Era" || filters.era == card.era) {
+              if (
+                card.name.toLowerCase().includes(filters.name.toLowerCase())
+              ) {
+                if (
+                  filters.power == "Any Power" ||
+                  filters.power == card.power
+                ) {
+                  if (
+                    filters.color == "Any Color" ||
+                    filters.color == card.color
+                  ) {
+                    if (
+                      filters.energy == "Any Energy" ||
+                      parseInt(filters.energy) == parseInt(card.energy)
+                    ) {
+                      if (
+                        filters.rarity == "Any Rarity" ||
+                        filters.rarity == card.rarity
+                      ) {
+                        if (
+                          filters.combo_power == "Any Combo Power" ||
+                          filters.combo_power == card.combo_power
+                        ) {
+                          if (
+                            card.card_type == "Leader" &&
+                            filters.card_type == "Leader"
+                          ) {
+                            filtered.push(card);
+                          } else if (
+                            filters.card_type != "Leader" &&
+                            card.card_type != "Leader"
+                          ) {
+                            filtered.push(card);
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
-          //#endregion
-        } else {
-          //#region Cards Filters
-          for (const card of this.cardsList.cards) {
-            if (
-              (filters.sets == "Any Sets" || filters.sets == card.sets) &&
-              (filters.power == "Any Power" || filters.power == card.power) &&
-              card.name.toLowerCase().includes(filters.name.toLowerCase())
-            ) {
-              filtered.push(card);
-            }
-          }
-          //#endregion
         }
+        //#endregion
 
         //#region SortBy
         if (filters.sortBy == "Name") {
@@ -201,6 +299,7 @@ export default {
     },
   },
   //#endregion
+
   //#region Methods
   methods: {
     getCards() {
@@ -210,10 +309,9 @@ export default {
       });
     },
     addToDeckList(object) {
-      console.log(object.power);
-      if (this.filters.cardType == "Leader") {
+      if (this.filters.card_type == "Leader") {
         this.resetFilters();
-        this.filters.cardType = "Cards";
+        this.filters.card_type = "Cards";
         this.deckList.leader = object;
       } else {
         let isSuperCombo = object.description.includes("[Super Combo]");
@@ -234,7 +332,7 @@ export default {
           let newCards = {
             id: object.id,
             name: object.name,
-            cardType: object.cardType,
+            card_type: object.card_type,
             color: object.color,
             description: object.description,
             power: object.power,
@@ -272,9 +370,15 @@ export default {
     resetFilters() {
       let filters = {
         name: "",
-        cardType: this.filters.cardType,
+        trait: "Any Special Trait",
+        card_type: this.filters.card_type,
+        color: "Any Color",
         sets: "Any Sets",
+        energy: "Any Energy",
         power: "Any Power",
+        combo_power: "Any Combo Power",
+        rarity: "Any Rarity",
+        era: "Any Era",
         sortBy: "Name",
       };
 
